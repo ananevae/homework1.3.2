@@ -1,67 +1,66 @@
 package ru.netology
 
+const val limit = 75_000_00
+const val perc1 = 0.6
+const val perc2 = 0.75
+const val fix1 = 20_00
+const val min2 = 35_00
+const val limVk = 40_000_00
+const val oneLimVk = 15_000_00
+const val limOther = 600_000_00
+const val oneLimOther = 150_000_00
+
 fun calculateCommission(
-    typeCard: String = "Vk Pay",
+    typeCard: String,
     previousTransfers: Int = 0,
-    amount: Int,
-    limit: Int,
-    perc1: Double,
-    perc2: Double,
-    fix1: Int,
-    min2: Int
+    amount: Int
 ): Int {
-    when (typeCard){
-        "Mastercard", "Maestro" -> {
-            return if (previousTransfers > limit) {
-                (perc1 * amount + fix1).toInt()
-            } else 0
-        }
-        "Visa", "Mир" -> {
-            return if ((perc2 * amount) > min2) {
-                (perc2 * amount).toInt()
-            } else {
-                min2
+
+    if (typeCard == "Vk Pay") {
+        return if (previousTransfers + amount > limVk) {
+            -1
+        } else if (amount > oneLimVk) {
+            -2
+        } else 0
+    } else {
+        return if (previousTransfers + amount > limOther) {
+            -1
+        } else if (amount > oneLimOther) {
+            -2
+        } else {
+            when (typeCard) {
+                "Mastercard", "Maestro" -> {
+                    return if (previousTransfers > limit) {
+                        (perc1 / 100 * amount + fix1).toInt()
+                    } else 0
+                }
+                "Visa", "Mир" -> {
+                    return if ((perc2 / 100 * amount) > min2) {
+                        (perc2 / 100 * amount).toInt()
+                    } else {
+                        min2
+                    }
+                }
+                else -> return -3
             }
         }
-        else -> return 0
     }
 }
 
 fun main() {
     val amount = 6_000_00
     val typeCard = "Visa"
-    val previousTransfers = 10_000_00
-    val limit = 75_000_00
-    val perc1 = 0.6
-    val perc2 = 0.75
-    val fix1 = 20_00
-    val min2 = 35_00
-    val limVk = 40_000_00
-    val oneLimVk = 15_000_00
-    val limOther = 600_000_00
-    val oneLimOther = 150_000_00
+    val previousTransfers = 80_000_00
 
-    if (typeCard == "Vk Pay") {
-        if (previousTransfers + amount > limVk) {
-            println("Превышен месячный лимит на переводы Vk Pay")
-        }
-        else if (amount > oneLimVk) {
-            println("Превышена максимальная сумма перевода")
-        }
-        else println("Total Commission: 0 руб. 0 коп.")
-    }
-    else {
-        if (previousTransfers + amount > limOther) {
-            println("Превышен месячный лимит перевода на карту $typeCard")
-        }
-        else if (amount > oneLimOther) {
-            println("Превышена максимальная сумма перевода")
-        }
-        else {
-            val totalCommission =
-                calculateCommission(typeCard, previousTransfers, amount, limit, perc1, perc2, fix1, min2)
-            println("Total Commission: " + totalCommission / 100 + " руб. " + totalCommission % 100 + " коп.")
-        }
+    val totalCommission = calculateCommission(typeCard, previousTransfers, amount)
+    if (totalCommission == -1) {
+        println("Превышен месячный лимит на переводы")
+    } else if (totalCommission == -2) {
+        println("Превышена максимальная сумма перевода")
+    } else if (totalCommission == -3) {
+        println("Перевод с этой карты недоступен")
+    } else {
+        println("Total Commission: " + totalCommission / 100 + " руб. " + totalCommission % 100 + " коп.")
     }
 
 }
